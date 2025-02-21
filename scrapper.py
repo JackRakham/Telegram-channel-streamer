@@ -1,8 +1,10 @@
 import asyncio
 import os
-from telethon import TelegramClient
+from telethon import TelegramClient, events
 from kafka import KafkaProducer
 from dotenv import load_dotenv
+
+from classes.message import Message
 
 # Telegram API credentials (get from my.telegram.org)
 
@@ -11,26 +13,21 @@ api_id = int(os.getenv('API_ID'))
 api_hash = os.getenv('API_HASH')
 phone = os.getenv('PHONE')
 
-# Kafka setup
-# kafka_broker = 'localhost:9092'  # Adjust to your Kafka server
-# producer = KafkaProducer(
-#     bootstrap_servers=kafka_broker,
-#     value_serializer=lambda v: json.dumps(v).encode('utf-8')
-# )
 
 # Telegram client
-client = TelegramClient('*/sessions/anon', api_id, api_hash)
+client = TelegramClient('sessions/anon.session', api_id, api_hash)
 
 # List of channels to monitor (usernames or IDs)
-channels = ['channel1_username', 'channel2_username', 'channel3_username']
+channels = ['cointelegraph', 'criptonoticias', 'news_crypto']
 
-async def main():
-    # Getting information about yourself
-    me = await client.get_me()
 
-    # "me" is a user object. You can pretty-print
-    # any Telegram object with
-    print(me.stringify())
-
-with client:
-    client.loop.run_until_complete(main())
+@client.on(events.NewMessage)
+async def my_event_handler(event ):
+    chat = await event.get_chat()
+    print(chat)
+    msg = Message(mensaje=event.raw_text, channel=f"{event.chat_id} : {chat.first_name}", date=event.date, autor=event.sender_id, message_id=event.id)
+    print(msg.__str__())
+    event
+    
+client.start()
+client.run_until_disconnected()
