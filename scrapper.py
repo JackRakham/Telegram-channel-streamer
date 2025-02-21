@@ -27,7 +27,7 @@ async def my_event_handler(event ):
     print(chat)
     msg = Message(mensaje=event.raw_text, channel=f"{event.chat_id} : {chat.first_name}", date=event.date, autor=event.sender_id, message_id=event.id)
     print(msg.__str__())
-    event
+    
     
 client.start()
 client.run_until_disconnected()
