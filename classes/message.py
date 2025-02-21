@@ -8,7 +8,7 @@ class Message():
         self.type = "Telegram"
         
     def __str__(self) -> str:
-        return f"Fecha: {self.date}\nMensaje: {self.mensaje} \nCanal: {self.channel} \nAutor: {self.autor}"
+        return f"- Message:\n   Fecha: {self.date}\n   Mensaje: {self.content}\n   Canal: {self.channel} \n   Autor: {self.autor}\n"
         
         
 
