@@ -1,9 +1,9 @@
 class Channel():
-    def __init__(self,name, last_message_id, url) -> None:
+    def __init__(self,name, url, active: bool) -> None:
         self.name = name
-        self.last_message = last_message_id
         self.url = url
         self.log = []
+        self.active = active
         #Añadir miembros o otros datos relevantes del canal
         
     def to_dict(self):
