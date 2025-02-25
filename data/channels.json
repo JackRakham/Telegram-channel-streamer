@@ -1,8 +1,6 @@
 [
     {
         "name": "cointelegraph",
-        "id": "1",
-        "active": true,
-        "url": "https://web.telegram.org/k/#@cointelegraph"
+        "active": true
     }
 ]
