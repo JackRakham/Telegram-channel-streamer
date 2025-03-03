@@ -11,7 +11,7 @@ from classes.channel import Channel
 from classes.message import Message
 from flask_socketio import SocketIO, emit
 
-from utils import init_db, load_Channels, save_Channels
+from utils import init_db, load_Channels, save_Channel, save_Channels, save_Message
 # Telegram API credentials (get from my.telegram.org)
 
 load_dotenv()
@@ -24,30 +24,35 @@ client = TelegramClient('sessions/anon.session', api_id, api_hash)
 
 # List of channels to monitor (usernames or IDs)
 channels = []
-channels_names = set()
+channels_ids = set()
 # Cola para mensajes
 messages = []
 
 # Flask app
 app = Flask(__name__)
-socketio = SocketIO(app)
+socketio = SocketIO(app,async_mode='threading')
 
 #Function for new message
 @client.on(events.NewMessage)
 async def my_event_handler(event ):
     chat = await event.get_chat()
-    print(chat)
-    msg = Message(mensaje=event.raw_text, channel=f"{event.chat_id} : {chat.username}", date=str(event.date), autor=event.sender_id, message_id=event.id)
-    print(msg.__str__())
-    if (chat.username in channels_names):
+    #print(chat)
+    msg = Message(mensaje=event.raw_text, channel={chat.username}, date=str(event.date), autor=event.sender_id, message_id=event.id)
+    channel_id = chat.id
+    #print(msg.__str__())
+    #print("Message from: ", chat.username)
+    print("Este el id del canal: ", channel_id)
+    if (channel_id in channels_ids ):
+        print("Message added")
         messages.append(msg)
+        #save_Message(msg)
         socketio.emit('new_message', msg.__dict__)
     
 def run_telegram_client():
     try:
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
-        client.start()
+        client.start(phone)
         client.run_until_disconnected()
     except Exception as e:
         print(f"Error al iniciar el cliente de Telegram: {e}")
@@ -59,34 +64,37 @@ def handle_connect():
     for msg in messages:
         emit('new_message', msg.__dict__)
 
-# Event for creating channel
-@socketio.on('add_channel')
-def handle_add_channel(data):
-    channel_name = data['name']
-    new_channel = Channel(name=channel_name, active=True)
-    channels.append(new_channel)
-    channels_names.add(channel_name)
-    save_Channels(channels)
-    socketio.emit('channel_added', {'url': url_for('index')})
-
 # Update channel active
 @socketio.on('update_channel_active')
 def handle__update_channel_active(data):
-    channel_name = data['name']
+    channel_id = data['id']
     active = data['active']
-    if active:
-        channels_names.add(channel_name)
-    else:
-        channels_names.remove(channel_name)
+    try:
+        if active:
+            channels_ids.add(channel_id)
+        else:
+            channels_ids.remove(channel_id)
+    except Exception as e:
+        print(f"Error al actualizar el estado del canal: {e}")
+    for channel in channels:
+        if str(channel.id) == str(channel_id):
+            channel.active = active
+            print("Channel ", channel.name, " updated")
+            break
+        save_Channel(channel)
         
 # Load channels
 def loadChannels():
     rows = load_Channels()
     for row in rows:
-        channel = Channel(name=row['name'], active=row['active'])
+        channel = Channel(id= row['channel_id'],name=row['name'], active=row['active'])
         channels.append(channel) 
         if channel.active:
-            channels_names.add(channel.name)
+            channels_ids.add(channel.name)
+
+@app.route('/select_channels')
+def select_channels():
+    return render_template('select_channels.html')    
 
 @app.route('/')
 def index():
