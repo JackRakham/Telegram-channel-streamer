@@ -2,6 +2,7 @@
 <div class="bg-white rounded-lg shadow-md p-6 mb-4 mt-4 h-100 overflow-y-auto">
     <div class="flex-col justify-between items-center mb-4" id="channels">
         <h2 class="text-xl font-semibold text-gray-800" >Canales Seleccionados</h2>
+        <div class="h-30 max-h-[300px] overflow-y-auto mb-4 mt-4 border border-gray-300 rounded-lg p-4">
         {% for channel in channels %}
             <div class="flex flex-row justify-start items-center space-x-4 mb-4">
                 <label for="active-{{ channel.name }}">
@@ -11,6 +12,7 @@
                 <h3>{{channel.name}}</h3>
             </div>
         {% endfor %}
+        </div>
     </div>
     <!-- Script for updating channel active state event -->
     <script>
