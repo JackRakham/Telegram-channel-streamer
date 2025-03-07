@@ -11,4 +11,12 @@ class Message():
         return f"- Message:\n   Fecha: {self.date}\n   Mensaje: {self.content}\n   Canal: {self.channel} \n   Autor: {self.autor}\n"
         
         
-
+    def __dict__(self):
+        return {
+            "content": self.content,
+            "channel": self.channel,
+            "date": self.date,
+            "autor": self.autor,
+            "message_id": self.message_id,
+            "type": self.type
+        }

@@ -61,7 +61,7 @@ def save_Message(message):
     cursor.close()
     conn.close()
 
-def load_Channels():
+def get_Channels():
     try:
         conn = sqlite3.connect('telegram_scraper.db', check_same_thread=False)
         conn.row_factory = sqlite3.Row
