@@ -6,7 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Telegram Scrapper Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.js"></script>
 </head>
 
 <body class="bg-gray-100 min-h-screen">
@@ -44,57 +43,10 @@
             </div>
         </div>
         <!--Channel pannel -->
-        <div class="bg-white rounded-lg shadow-md p-6 mb-4 mt-4">
-            <div class="flex-col justify-between items-center mb-4">
-                <h2 class="text-xl font-semibold text-gray-800">Canales Seleccionados</h2>
-                {% for channel in channels %}
-                    <div class="flex flex-row justify-start items-center space-x-4 mb-4">
-                        <h3>{{channel.name}}</h3>
-                        <label for="subscribe">
-                            <input type="checkbox" id="active-{{ channel.name }}" name="subscribe" value="newsletter" {% if channel.active %}checked{% endif %}>
-                            Active
-                        </label>
-                    </div>
-                {% endfor %}
-            </div>
-        </div>
+        {% include 'channels.html' %}
         <!--Message log -->
-        <div class="bg-white rounded-lg shadow-md p-6 mt-4 mb-4">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-semibold text-gray-800">Registro de Mensajes</h2>
-            </div>
-            <div class="bg-gray-900 rounded-lg p-4 h-96 overflow-y-auto font-mono text-s">
-                <div class="messages mb-4 text-white" id="messages">
-                    {% for msg in messages %}
-                        <div class="message text-white">
-                            <strong class="text-white">{{ msg.channel }}</strong>
-                            <br>
-                            {{ msg.content }}
-                            <br>
-                            <small class="text-white">{{ msg.date }}</small>
-                        </div>
-                    {% endfor %}
-                </div>
-                <script>
-                const socket = io.connect('http://' + document.domain + ':' + location.port);
-                socket.on('new_message', function(msg) {
-                    const div = document.getElementById('messages');
-                    const messageDiv = document.createElement('div');
-                    messageDiv.className = 'message';
-                    messageDiv.innerHTML = `
-                        <strong class="text-white">${msg.channel}</strong><br>
-                        ${msg.content}<br>
-                        <small class="text-white">${msg.date}</small>
-                    `;
-                    div.insertBefore(messageDiv, div.firstChild);
-                });
-                socket.on('connect', function() {
-                    console.log('Conectado al servidor WebSocket');
-                });
-            </script>
-            </div>
-        </div>
-
+        {% include 'messages.html' %}
+        <!--System log -->
         <div class="bg-white rounded-lg shadow-md p-6">
             <div class="flex justify-between items-center mb-4">
                 <h2 class="text-xl font-semibold text-gray-800">Registro de Actividad</h2>

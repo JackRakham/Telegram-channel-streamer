@@ -1,0 +1,45 @@
+<!--Channel pannel -->
+<div class="bg-white rounded-lg shadow-md p-6 mb-4 mt-4 h-100 overflow-y-auto">
+    <div class="flex-col justify-between items-center mb-4" id="channels">
+        <h2 class="text-xl font-semibold text-gray-800" >Canales Seleccionados</h2>
+        {% for channel in channels %}
+            <div class="flex flex-row justify-start items-center space-x-4 mb-4">
+                <label for="active-{{ channel.name }}">
+                    <input type="checkbox" id="active-{{ channel.name }}" name="active-{{ channel.name }}" value="{{ channel.id }}" {% if channel.active %}checked{% endif %}>
+                    Active
+                </label>
+                <h3>{{channel.name}}</h3>
+            </div>
+        {% endfor %}
+    </div>
+    <!-- Script for updating channel active state event -->
+    <script>
+        document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const channelId = this.value;
+                const isActive = this.checked;
+                fetch('/update_channel_active', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ id: channelId, active: isActive }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        console.log('Canal actualizado:', data.message);
+                    } else {
+                        console.error('Error al actualizar canal:', data.message);
+                        this.checked = !isActive;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error en la solicitud:', error);
+                    // Si hay un error, revertir el estado del checkbox
+                    this.checked = !isActive;
+                });
+            });
+        });
+    </script>
+</div>
