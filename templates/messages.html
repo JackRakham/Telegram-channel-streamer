@@ -1,35 +1,40 @@
 <div class="bg-white rounded-lg shadow-md p-6 mt-4 mb-4">
     <div class="flex justify-between items-center mb-4">
         <h2 class="text-xl font-semibold text-gray-800">Registro de Mensajes</h2>
+        <button onclick="fetchMessages()" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg transition duration-200">
+            Actualizar Mensajes
+        </button>
     </div>
     <div class="bg-gray-900 rounded-lg p-4 h-96 overflow-y-auto font-mono text-s">
         <div class="messages mb-4 text-white" id="messages">
-            {% for msg in messages %}
-                <div class="message text-white">
-                    <strong class="text-white">{{ msg.channel }}</strong>
-                    <br>
-                    {{ msg.content }}
-                    <br>
-                    <small class="text-white">{{ msg.date }}</small>
-                </div>
-            {% endfor %}
+            
         </div>
-        <script>
-        const socket = io.connect('http://' + document.domain + ':' + location.port);
-        socket.on('new_message', function(msg) {
-            const div = document.getElementById('messages');
-            const messageDiv = document.createElement('div');
-            messageDiv.className = 'message';
-            messageDiv.innerHTML = `
-                <strong class="text-white">${msg.channel}</strong><br>
-                ${msg.content}<br>
-                <small class="text-white">${msg.date}</small>
-            `;
-            div.insertBefore(messageDiv, div.firstChild);
-        });
-        socket.on('connect', function() {
-            console.log('Conectado al servidor WebSocket');
-        });
-    </script>
+        
     </div>
+    <script>
+        function fetchMessages() {
+        fetch('/get_messages')
+            .then(response => response.json())
+            .then(messages => {
+                const div = document.getElementById('messages');
+                div.innerHTML = ''; 
+                messages.forEach(msg => {
+                    console.log("Mensaje añadido");
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = 'message text-white';
+                    messageDiv.innerHTML = `
+                        <strong class="text-white">${msg.channel}</strong>
+                        <br>${msg.content}<br>
+                        <small class="text-white">${msg.date}</small>
+                    `;
+                    div.insertBefore(messageDiv, div.firstChild);
+                });
+                console.log('Mensajes actualizados');
+            })
+            .catch(error => {
+                console.error('Error al obtener mensajes:', error);
+            });
+        }
+        window.onload = fetchMessages;
+    </script>
 </div>

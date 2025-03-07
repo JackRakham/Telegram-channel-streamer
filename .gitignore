@@ -4,3 +4,4 @@
 /sessions/*
 /venv/*
 /classes/__pycache__/*
+*.sqlite3

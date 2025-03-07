@@ -1,57 +1,45 @@
 <!--Channel pannel -->
-<div class="bg-white rounded-lg shadow-md p-6 mb-4 mt-4">
+<div class="bg-white rounded-lg shadow-md p-6 mb-4 mt-4 h-100 overflow-y-auto">
     <div class="flex-col justify-between items-center mb-4" id="channels">
         <h2 class="text-xl font-semibold text-gray-800" >Canales Seleccionados</h2>
         {% for channel in channels %}
             <div class="flex flex-row justify-start items-center space-x-4 mb-4">
-                <h3>{{channel.name}}</h3>
                 <label for="active-{{ channel.name }}">
-                    <input type="checkbox" id="active-{{ channel.name }}" name="active-{{ channel.name }}" value="{{ channel.name }}" {% if channel.active %}checked{% endif %}>
+                    <input type="checkbox" id="active-{{ channel.name }}" name="active-{{ channel.name }}" value="{{ channel.id }}" {% if channel.active %}checked{% endif %}>
                     Active
                 </label>
+                <h3>{{channel.name}}</h3>
             </div>
         {% endfor %}
     </div>
     <!-- Script for updating channel active state event -->
     <script>
-        socket = window.socket || io.connect('http://' + document.domain + ':' + location.port);
-    
         document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
             checkbox.addEventListener('change', function() {
-                const channelName = this.value;  
-                const isActive = this.checked;   
-                socket.emit('update_channel_active', { name: channelName, active: isActive });
+                const channelId = this.value;
+                const isActive = this.checked;
+                fetch('/update_channel_active', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ id: channelId, active: isActive }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        console.log('Canal actualizado:', data.message);
+                    } else {
+                        console.error('Error al actualizar canal:', data.message);
+                        this.checked = !isActive;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error en la solicitud:', error);
+                    // Si hay un error, revertir el estado del checkbox
+                    this.checked = !isActive;
+                });
             });
-        });
-    
-    </script>
-    <!-- Add channel option -->
-    <div class="flex justify-start items-center mb-4">
-        <input type="text" id="channel-name" placeholder="Nombre del canal" class="border border-gray-300 rounded-lg p-2">
-        <button onclick="addChannel()" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg transition duration-200 flex items-center">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20"
-                fill="currentColor">
-                <path fill-rule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"
-                    clip-rule="evenodd" />
-            </svg>
-            Add channel
-    </div>
-    <script>
-        socket = window.socket || io.connect('http://' + document.domain + ':' + location.port)
-    
-        function addChannel() {
-            const channelName = document.getElementById('channel-name').value.trim();
-            if (channelName) {
-                socket.emit('add_channel', { name: channelName });
-                document.getElementById('channel-name').value = ''; 
-            } else {
-                alert('Please enter the channels name');
-            }
-        }
-        socket.on('channel_added', function(data) {
-            window.location.href = data.url
-            console.log(channels);
         });
     </script>
 </div>
