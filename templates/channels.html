@@ -14,16 +14,32 @@
     </div>
     <!-- Script for updating channel active state event -->
     <script>
-        socket = window.socket || io.connect('http://' + document.domain + ':' + location.port);
-    
         document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
             checkbox.addEventListener('change', function() {
-                const channelid = this.value;  
-                const isActive = this.checked;   
-                socket.emit('update_channel_active', { id: channelid, active: isActive });
+                const channelId = this.value;
+                const isActive = this.checked;
+                fetch('/update_channel_active', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ id: channelId, active: isActive }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        console.log('Canal actualizado:', data.message);
+                    } else {
+                        console.error('Error al actualizar canal:', data.message);
+                        this.checked = !isActive;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error en la solicitud:', error);
+                    // Si hay un error, revertir el estado del checkbox
+                    this.checked = !isActive;
+                });
             });
         });
-    
     </script>
-    
 </div>

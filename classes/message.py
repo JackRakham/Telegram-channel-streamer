@@ -1,10 +1,9 @@
 class Message():
-    def __init__(self, mensaje: str, channel: str, date: str, autor: str, message_id: int) -> None:
+    def __init__(self, mensaje: str, channel: str, date: str, autor: str) -> None:
         self.content = mensaje
         self.channel = channel
         self.date = date
         self.autor = autor
-        self.message_id = message_id
         self.type = "Telegram"
         
     def __str__(self) -> str:
@@ -17,6 +16,5 @@ class Message():
             "channel": self.channel,
             "date": self.date,
             "autor": self.autor,
-            "message_id": self.message_id,
             "type": self.type
         }
