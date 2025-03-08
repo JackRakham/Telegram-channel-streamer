@@ -8,13 +8,13 @@ Application for gathering telegram channels messages in a kafka stream. You can 
 🔹 Kafka Message streaming
 🛠️ Flask UI for settings
 
-📦 Technologies Used
+# 📦 Technologies Used
 
 * Flask
 * Telethon
 * Kafka
 
-📜 Installation and Setup
+# 📜 Installation and Setup
 
 1️⃣ Clone the repository
 ```sh
