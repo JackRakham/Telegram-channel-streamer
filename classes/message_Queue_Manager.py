@@ -31,3 +31,10 @@ class MessageQueueManager:
         while not self.messages_mirror_queue.empty():
             self.messages_list.append(self.messages_mirror_queue.get())
         return self.messages_list
+    
+    def get_message(self):
+        """Sacar un mensaje de la cola principal."""
+        with self._lock:
+            if not self.messages.empty():
+                return self.messages.get()
+            return None

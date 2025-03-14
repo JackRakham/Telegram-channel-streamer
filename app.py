@@ -1,5 +1,6 @@
 from queue import Queue
 import json
+import time
 from flask import Flask, render_template, jsonify, request, url_for
 import asyncio
 import os
@@ -106,13 +107,19 @@ def index():
     return render_template("index.html", channels = channels)
 
 def run_kafka_producer():
-    producer = KafkaProducer({'bootstrap.servers': 'localhost:9092'})
+    producer = KafkaProducer(
+        bootstrap_servers='localhost:9092',
+        value_serializer=lambda v: json.dumps(v).encode('utf-8')
+    )
     while True:
         try:
-            msg = queue_manager.messages.get(block=True, timeout=1)
+            msg = queue_manager.get_message()
+            if msg is None:
+                time.sleep(1)
+                continue
             msg_dict = msg.__dict__
             msg_json = json.dumps(msg_dict)
-            producer.produce('social_media_messages', key=msg.channel, value=msg_json)
+            producer.send('social_media_messages', key=msg.channel, value=msg_json)
             producer.flush()
             print(f"Sent message to Kafka: {msg_json}")
         except Exception as e:
@@ -124,4 +131,6 @@ if __name__ == '__main__':
     loadChannels()
     telegram_thread = threading.Thread(target=run_telegram_client,daemon=True)
     telegram_thread.start()
+    kafka_thread = threading.Thread(target=run_kafka_producer, daemon=True)
+    kafka_thread.start()
     app.run( debug=False, host='0.0.0.0', port=5000)
