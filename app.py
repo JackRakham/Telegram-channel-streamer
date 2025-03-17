@@ -39,18 +39,19 @@ async def my_event_handler(event):
     channel_id = chat.id
     try:
         msg = Message(
-            mensaje=event.raw_text,
+            content=event.raw_text,
             channel=chat.title if chat.title else "No title",
             date=str(event.date),
             autor=str(event.sender_id),
+            type="telegram channel"
         )
         formatted_channel_id = str("-100" + str(channel_id))
-        print(f"Checking channel: {formatted_channel_id} in {channels_ids}")
+        #print(f"Checking channel: {formatted_channel_id} in {channels_ids}")
         if formatted_channel_id in channels_ids:
             print("Message added")
             queue_manager.add_message(msg)
     except Exception as e:
-        print(f"Error al guardar mensaje: {e}")
+        print(f"Error saving message: {e}")
 
 def run_telegram_client():
     try:
@@ -59,15 +60,13 @@ def run_telegram_client():
         client.start()
         client.run_until_disconnected()
     except Exception as e:
-        print(f"Error al iniciar el cliente de Telegram: {e}")
+        print(f"Error starting telegram client: {e}")
 
 @app.route('/get_messages', methods=['GET'])
 def get_messages():
     messages_list = queue_manager.get_all_messages()
     messages_list_local = [msg.__dict__() for msg in messages_list]
-    print(f"Messages mirror queue size (get_messages): {queue_manager.messages_mirror_queue.qsize()}")
-    print(f"Tamaño lista original: {len(messages_list)}")
-    print(f"Tamaño lista devuelta: {len(messages_list_local)}")
+    #print(f"Messages mirror queue size (get_messages): {queue_manager.messages_mirror_queue.qsize()}")
     return jsonify(messages_list_local)
 
 # Update channel active
@@ -107,10 +106,15 @@ def index():
     return render_template("index.html", channels = channels)
 
 def run_kafka_producer():
-    producer = KafkaProducer(
-        bootstrap_servers='localhost:9092',
-        value_serializer=lambda v: json.dumps(v).encode('utf-8')
-    )
+    try:
+        producer = KafkaProducer(
+            bootstrap_servers='localhost:9092',
+            value_serializer=lambda v: json.dumps(v).encode('utf-8')
+        )
+        print("Kafka producer initialized.")
+    except Exception as e:
+        print(f"Error initializing Kafka producer, make sure that kafka is running: {e}")
+        return
     while True:
         try:
             msg = queue_manager.get_message()
@@ -119,8 +123,9 @@ def run_kafka_producer():
                 continue
             msg_dict = msg.__dict__
             msg_json = json.dumps(msg_dict)
-            producer.send('social_media_messages', key=msg.channel, value=msg_json)
-            producer.flush()
+            print(msg_dict)
+            producer.send('telegram_channel_messages', value=msg_dict)
+            #producer.flush()
             print(f"Sent message to Kafka: {msg_json}")
         except Exception as e:
             print(f"Error al enviar mensaje a Kafka: {e}")
