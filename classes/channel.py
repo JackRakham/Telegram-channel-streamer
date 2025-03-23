@@ -10,4 +10,4 @@ class Channel():
             "id": self.id,
             "name": self.name,
             "active": self.active
-        }
+        } 
